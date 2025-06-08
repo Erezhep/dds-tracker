@@ -1,0 +1,98 @@
+{% extends 'html/base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">{% if form.instance.pk %}Edit Transaction{% else %}Create Transaction{% endif %}</h3>
+        </div>
+        <div class="card-body">
+            <form method="post" class="needs-validation" novalidate>
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="{{ form.custom_date.id_for_label }}" class="form-label">Date</label>
+                        {{ form.custom_date }}
+                        <div class="invalid-feedback">Please select a date.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ form.status.id_for_label }}" class="form-label">Status</label>
+                        {{ form.status }}
+                        <div class="invalid-feedback">Please select a status.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ form.type.id_for_label }}" class="form-label">Type</label>
+                        {{ form.type }}
+                        <div class="invalid-feedback">Please select a type.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ form.category.id_for_label }}" class="form-label">Category</label>
+                        {{ form.category }}
+                        <div class="invalid-feedback">Please select a category.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ form.subcategory.id_for_label }}" class="form-label">Subcategory</label>
+                        {{ form.subcategory }}
+                        <div class="invalid-feedback">Please select a subcategory.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ form.amount.id_for_label }}" class="form-label">Amount (₽)</label>
+                        {{ form.amount }}
+                        <div class="invalid-feedback">Please enter a valid amount.</div>
+                    </div>
+                    <div class="col-12">
+                        <label for="{{ form.comment.id_for_label }}" class="form-label">Comment</label>
+                        {{ form.comment }}
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">Save</button>
+                        <a href="{% url 'transaction_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const categorySelect = document.querySelector('#id_category');
+    const subcategorySelect = document.querySelector('#id_subcategory');
+
+    function updateSubcategories() {
+        const categoryId = categorySelect.value;
+        if (categoryId) {
+            fetch(`/get_subcategories/?category_id=${categoryId}`)
+                .then(response => response.json())
+                .then(data => {
+                    subcategorySelect.innerHTML = '<option value="">---------</option>';
+                    data.forEach(subcategory => {
+                        const option = document.createElement('option');
+                        option.value = subcategory.id;
+                        option.textContent = subcategory.name;
+                        subcategorySelect.appendChild(option);
+                    });
+                });
+        } else {
+            subcategorySelect.innerHTML = '<option value="">---------</option>';
+        }
+    }
+
+    categorySelect.addEventListener('change', updateSubcategories);
+
+    // Initialize subcategories if a category is already selected
+    if (categorySelect.value) {
+        updateSubcategories();
+    }
+
+    // Client-side validation
+    const form = document.querySelector('.needs-validation');
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    });
+});
+</script>
+{% endblock %}
